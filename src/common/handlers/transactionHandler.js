@@ -3,6 +3,23 @@ import transactionHelper from '../helpers/transactionHelper';
 import dayjs from "dayjs";
 import csvParser from "csv-parser";
 
+export async function getTransactionStats() {
+    try {
+        const pipeline = [
+            {
+                $group: {
+                    _id: "$Status",
+                    count: { $sum: 1 }
+                }
+            }
+        ];
+
+        return transactionHelper.aggregate(pipeline)
+    } catch (e) {
+        throw e
+    }
+}
+
 export async function bulkUploadDataFromCsvHandler(inputBuffer) {
     try {
         const csvData = inputBuffer.toString('utf-8');

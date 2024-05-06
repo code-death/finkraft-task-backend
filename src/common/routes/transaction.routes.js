@@ -3,13 +3,27 @@ import {Router} from "express";
 import {
     addNewTransactionHandler, bulkUploadDataFromCsvHandler, deleteTransactionHandler,
     getTransactionDetailsHandler,
-    getTransactionListHandler, updateTransactionDetailsHandler, validateTransaction
+    getTransactionListHandler, getTransactionStats, updateTransactionDetailsHandler, validateTransaction
 } from "../handlers/transactionHandler";
 import _ from "lodash";
 import multer from "multer";
 
 const router = new Router();
 const upload = multer();
+
+router.route('/stats').get(async (req, res) => {
+    try {
+            const gotTransaction = await getTransactionStats(req.params);
+            setSuccess(res, {
+                transactionStats: gotTransaction ? gotTransaction : {}
+            })
+    } catch (err) {
+        console.log(err)
+        setServerError(res, {
+            message: err
+        })
+    }
+});
 
 router.post('/bulk-upload', upload.single('transactions'), async (req, res) => {
     try {
