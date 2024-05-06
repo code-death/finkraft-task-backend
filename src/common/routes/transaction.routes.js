@@ -94,7 +94,7 @@ router.route('/:id').get(async (req, res) => {
 
 router.route('/:id/update').post(async (req, res) => {
     try {
-        if (!_.isEmpty(req.params.id) && !_.isEmpty(req.body) && !_.isEmpty(req.body.member)) {
+        if (!_.isEmpty(req.params.id) && !_.isEmpty(req.body) && !_.isEmpty(req.body.transaction)) {
             let input = {
                 objectId: req.params.id,
                 updateObject: req.body.transaction
