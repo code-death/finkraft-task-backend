@@ -5,6 +5,8 @@ import transactions from './common/routes/transaction.routes'
 import bodyParser from "body-parser";
 
 const app = new Express();
+const port = process.env.PORT || 4000;
+
 app.use(bodyParser.json({limit: '20mb'}));
 app.use(bodyParser.urlencoded({limit: '20mb', extended: false}));
 app.use((req, res, next) => {
@@ -29,9 +31,9 @@ app.use("*", (req, res, next) => {
 
 app.use('/transactions', transactions)
 
-app.listen(8102, (error) => {
+app.listen(port, (error) => {
     if (!error) {
-        console.log(`API is running on port: 8102! Build something amazing!`);
+        console.log(`API is running on port: ${port}! Build something amazing!`);
     }
 });
 
