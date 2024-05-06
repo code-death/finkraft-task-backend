@@ -1,13 +1,35 @@
 import {setServerError, setSuccess} from "../../utility/responseUtility";
 import {Router} from "express";
 import {
-    addNewTransactionHandler, deleteTransactionHandler,
+    addNewTransactionHandler, bulkUploadDataFromCsvHandler, deleteTransactionHandler,
     getTransactionDetailsHandler,
     getTransactionListHandler, updateTransactionDetailsHandler, validateTransaction
 } from "../handlers/transactionHandler";
 import _ from "lodash";
+import multer from "multer";
 
 const router = new Router();
+const upload = multer();
+
+router.post('/bulk-upload', upload.single('transactions'), async (req, res) => {
+    try {
+        const file = req.file;
+
+        if (!file) {
+            throw 'CSV file is required';
+        }
+
+        await bulkUploadDataFromCsvHandler(file.buffer);
+        setSuccess(res, {
+            message: 'Data uploaded successfully'
+        });
+    } catch (err) {
+        console.error(err);
+        setServerError(res, {
+            message: err
+        });
+    }
+});
 
 router.route('/list').post(async (req, res) => {
     try {
@@ -33,14 +55,14 @@ router.route('/new').post(async (req, res) => {
     try {
         if (!_.isEmpty(req.body)) {
             const transactionValidation = validateTransaction(req.body.transaction);
-           if(transactionValidation.isValid) {
-               const outputResult = await addNewTransactionHandler(req.body.transaction);
-               setSuccess(res, {
-                   transaction: outputResult ? outputResult : {}
-               })
-           } else {
-               throw transactionValidation.message
-           }
+            if (transactionValidation.isValid) {
+                const outputResult = await addNewTransactionHandler(req.body.transaction);
+                setSuccess(res, {
+                    transaction: outputResult ? outputResult : {}
+                })
+            } else {
+                throw transactionValidation.message
+            }
         } else {
             throw 'no request body sent'
         }

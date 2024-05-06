@@ -1,6 +1,44 @@
-
+import { Readable } from 'stream';
 import transactionHelper from '../helpers/transactionHelper';
 import dayjs from "dayjs";
+import csvParser from "csv-parser";
+
+export async function bulkUploadDataFromCsvHandler(inputBuffer) {
+    try {
+        const csvData = inputBuffer.toString('utf-8');
+
+        const transactions = await new Promise((resolve, reject) => {
+            const results = [];
+
+            const parser = csvParser();
+            parser.on('data', (data) => {
+                results.push(data);
+            });
+            parser.on('error', (err) => {
+                reject(err);
+            });
+            parser.on('end', () => {
+                resolve(results);
+            });
+
+            const readableStream = new Readable();
+            readableStream.push(csvData);
+            readableStream.push(null);
+            readableStream.pipe(parser);
+        });
+
+        await Promise.all(transactions.map(async (transaction) => {
+            const formattedTransaction = {
+                ...transaction,
+                TransactionDate: dayjs(transaction.TransactionDate).toDate()
+            };
+
+            await transactionHelper.addObject(formattedTransaction);
+        }));
+    } catch (e) {
+        throw e;
+    }
+}
 
 export function validateTransaction(input) {
     try {
